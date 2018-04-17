@@ -40,6 +40,9 @@ jQuery( document ).ready(function( $ ) {
 })(jQuery);
 
 
+
+
+
 jQuery(document).ready(function($) {
 
     $('body').append('' +
@@ -83,9 +86,6 @@ jQuery(document).ready(function($) {
                 url: ajaxurl,
                 data: data,
                 type: 'POST',
-                beforeSend: function (xhr) {
-                    $(".post-loader").css("display", "block");
-                },
                 success: function (data) {
                     if (data) {
 
@@ -114,6 +114,21 @@ jQuery(document).ready(function($) {
                 }
             });
         }
-    }).change();
+    });
 });
 
+
+
+jQuery(document).ready(function($) {
+
+    $(".mv-cso select").each(function () {
+        this.disabled = $('option', this).length < 2;
+    });
+});
+
+
+
+jQuery(document).ready(function($) {
+
+
+});

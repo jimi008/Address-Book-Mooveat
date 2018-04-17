@@ -14,53 +14,16 @@ class Mooveat_Address_Book_ACF
         // Populate select field using filter
         add_filter('acf/load_field/name=categorie_principale_organisation', array( $this, 'acf_load_category_principal') );
         // Populate select field using filter
+        add_filter('acf/load_field/name=categorie_secondaire_organisation', array( $this, 'acf_load_category_secondary') );
+        // Populate select field using filter
         add_filter('acf/load_field/name=categories_produits', array( $this, 'acf_load_categories_produits') );
+        // Populate select field u
+        add_filter('acf/load_field/name=label', array( $this, 'acf_load_labels') );
+
+        add_filter('ac/column/value', array( $this, 'ac_cpo_column_value'), 20, 3 );
 
     }
 
-
-    // Returns category secondary organization by category principal organization
-    public function secondary_by_principal_category($selected_cpo)
-    {
-
-        // Verify nonce
-        if (!isset($_POST['cpo_nonce']) || !wp_verify_nonce($_POST['cpo_nonce'], 'cpo_nonce'))
-            die('Permission denied');
-
-        // Get principal selected var
-        $selected_cpo = $_POST['selected_cpo'];
-
-        $terms = get_terms(array(
-            'taxonomy' => 'categorie_producteur_point_vente',
-            'orderby' => 'name',
-            'order' => 'ASC',
-            'parent' => $selected_cpo,
-            'hide_empty' => false
-
-        ));
-
-        foreach ($terms as $term) {
-
-            $new_cso[] = array(
-                $term->term_id => $term->name
-            );
-
-        }
-
-        // Returns direct child terms as array if there is selected category principal organization
-        if ($selected_cpo) {
-
-            return wp_send_json($new_cso);
-
-        } else {
-
-            $arr_data = array('No Response');
-            return wp_send_json($arr_data);
-
-        }
-
-        die();
-    }
 
 
 // Add ACF options page for import/export
@@ -179,6 +142,84 @@ class Mooveat_Address_Book_ACF
 
     }
 
+    public function acf_load_category_secondary($field)
+    {
+
+        // Reset choices
+        $field['choices'] = array();
+
+        $cpo_group = get_field('mvcpo');
+        $selected_cpo = $cpo_group['categorie_principale_organisation']['value'];
+
+        // Populate
+        $field['choices'][''] = 'Select Category';
+
+        if ($selected_cpo) {
+
+            $terms = get_terms(array(
+                'taxonomy' => 'categorie_producteur_point_vente',
+                'orderby' => 'name',
+                'order' => 'ASC',
+                'parent' => $selected_cpo,
+                'hide_empty' => false
+
+            ));
+
+            foreach ($terms as $term) {
+                $field['choices'][$term->name] = $term->name;
+            }
+
+        }
+
+        // Return values
+        return $field;
+
+    }
+
+
+    // Returns category secondary organization by category principal organization
+    public function secondary_by_principal_category($selected_cpo)
+    {
+
+        // Verify nonce
+        if (!isset($_POST['cpo_nonce']) || !wp_verify_nonce($_POST['cpo_nonce'], 'cpo_nonce'))
+            die('Permission denied');
+
+        // Get principal selected var
+        $selected_cpo = $_POST['selected_cpo'];
+
+        $terms = get_terms(array(
+            'taxonomy' => 'categorie_producteur_point_vente',
+            'orderby' => 'name',
+            'order' => 'ASC',
+            'parent' => $selected_cpo,
+            'hide_empty' => false
+
+        ));
+
+        foreach ($terms as $term) {
+
+            $new_cso[] = array(
+                $term->name => $term->name
+            );
+
+        }
+
+        // Returns direct child terms as array if there is selected category principal organization
+        if ($selected_cpo) {
+
+            return wp_send_json($new_cso);
+
+        } else {
+
+            $arr_data = array('No Response');
+            return wp_send_json($arr_data);
+
+        }
+
+        die();
+    }
+
 
     public function acf_load_categories_produits($field)
     {
@@ -204,15 +245,75 @@ class Mooveat_Address_Book_ACF
 
 
         // Populate
-        $field['choices'][''] = 'Select Category';
+//        $field['choices'][''] = 'Select Category';
 
         foreach ($terms as $term) {
-            $field['choices'][$term->term_id] = $term->name;
+            $field['choices'][$term->name] = $term->name;
         }
 
         // Return values
         return $field;
 
+    }
+
+
+
+    public function acf_load_labels($field)
+    {
+
+        // Reset choices
+        $field['choices'] = array();
+
+        /**
+         * Get all direct child's of specific parent terms. Note we use 'wpse_parents' => id to only get terms for
+         *
+         * @see get_terms
+         * @link http://codex.wordpress.org/Function_Reference/get_terms
+         */
+
+        $terms = get_terms(array(
+            'taxonomy' => 'categorie_producteur_point_vente',
+            'orderby' => 'name',
+            'order' => 'ASC',
+            'parent' => '56',
+            'hide_empty' => false
+
+        ));
+
+
+        // Populate
+//        $field['choices'][''] = 'Select Label';
+
+        foreach ($terms as $term) {
+            $field['choices'][$term->name] = $term->name;
+        }
+
+        // Return values
+        return $field;
+
+    }
+
+
+    function ac_cpo_column_value( $value, $id, $column ) {
+        if ( $column instanceof ACP_Column_CustomField ) {
+            $meta_key = $column->get_meta_key(); // This gets the Custom Field key
+
+            if ( 'mvcpo_categorie_principale_organisation' == $meta_key ) {
+
+                // Use the color
+                if ($value != '&ndash;') {
+
+                    $cpo_group = get_field_object('mvcpo');
+                    $selected_cpo = $cpo_group['sub_fields'][0];
+                    $selected_cpo_label = $selected_cpo['choices'][ $value ];
+
+                    $value = $selected_cpo_label;
+
+                }
+            }
+        }
+
+        return $value;
     }
 
 }

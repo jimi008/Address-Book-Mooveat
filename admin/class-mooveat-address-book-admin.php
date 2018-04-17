@@ -16,6 +16,8 @@ class Mooveat_Address_Book_Admin
         add_action('add_meta_boxes', array( $this,  'mv_remove_wp_seo_meta_box'), 100);
         add_action( 'admin_menu', array( $this, 'mv_address_book_replace_submit_meta_box' ));
         add_filter( 'post_updated_messages', array( $this,  'mv_address_book_cpt_messages' ));
+        add_action( 'current_screen', array( $this, 'wpse151723_remove_yoast_seo_posts_filter'), 20 );
+//        add_action( 'current_screen', 'wpse151723_remove_yoast_seo_posts_filter', 20 );
 
     }
 
@@ -35,11 +37,12 @@ class Mooveat_Address_Book_Admin
 
         if ('mv_address_book' === $screen->post_type) {
 
-            wp_enqueue_script('mvab-admin-script', plugin_dir_url( __FILE__ ) . "js/mvab-admin.js", array(), $this->version);
+            wp_enqueue_script('mvab-admin-script', plugin_dir_url( __FILE__ ) . "js/mvab-admin.js", array('jquery'), $this->version);
             wp_enqueue_style('mvab-admin-style', plugin_dir_url( __FILE__ ) . "css/mvab-admin.css", array(), $this->version);
 
             wp_dequeue_script('autosave');
             wp_deregister_script('postbox');
+
         }
 
         //For calling ajax to populate categories select field
@@ -48,6 +51,7 @@ class Mooveat_Address_Book_Admin
         ));
 
     }
+
 
     //	remove following meta boxes from competition post_type
     public function remove_meta_boxes()
@@ -121,6 +125,24 @@ class Mooveat_Address_Book_Admin
     }
 
 
+    function wpse151723_remove_yoast_seo_posts_filter() {
+
+        $screen = get_current_screen();
+
+        global $wpseo_meta_columns;
+
+        if ('mv_address_book' === $screen->post_type) {
+
+            if ($wpseo_meta_columns) {
+                remove_action('restrict_manage_posts', array($wpseo_meta_columns, 'posts_filter_dropdown'));
+                remove_action('restrict_manage_posts', array($wpseo_meta_columns, 'posts_filter_dropdown_readability'));
+
+            }
+
+            add_filter('months_dropdown_results', '__return_empty_array');
+        }
+    }
+
     public function my_manage_columns($columns)
     {
         unset($columns['wpseo-score']);
@@ -136,7 +158,9 @@ class Mooveat_Address_Book_Admin
     public function remove_columns_init()
     {
         add_filter('manage_mv_address_book_posts_columns', array( $this, 'my_manage_columns'), 20, 2);
+
     }
+
 
 
     /**
@@ -273,6 +297,8 @@ class Mooveat_Address_Book_Admin
 
         return $messages;
     }
+
+
 
 
 

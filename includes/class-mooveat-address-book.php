@@ -35,7 +35,7 @@ class Mooveat_Address_Book {
         $acf = new Mooveat_Address_Book_ACF( $this->get_version() );
 
         $this->loader->add_action('admin_enqueue_scripts', $admin, 'admin_scripts');
-        $this->loader->add_action( 'admin_init' , $admin, 'remove_columns_init', 20, 2 );
+        $this->loader->add_action( 'admin_init' , $admin, 'remove_columns_init', 20 );
         //ajax call
         $this->loader->add_action('wp_ajax_cso_category', $acf, 'secondary_by_principal_category');
         $this->loader->add_action('wp_ajax_nopriv_cso_category', $acf , 'secondary_by_principal_category');
