@@ -29,6 +29,13 @@ class Mooveat_Address_Book_Admin
     public function admin_scripts($hook)
     {
 
+        if ($hook  == 'edit.php' ) {
+            wp_register_style('select2css', '//cdnjs.cloudflare.com/ajax/libs/select2/3.5.4/select2.css', false, '1.0', 'all');
+            wp_register_script('select2', '//cdnjs.cloudflare.com/ajax/libs/select2/3.5.4/select2.js', array('jquery'), '1.0', true);
+            wp_enqueue_style('select2css');
+            wp_enqueue_script('select2');
+        }
+
         if ($hook != 'post-new.php' && $hook != 'edit.php' && $hook != 'post.php') {
             return;
         }
@@ -61,13 +68,13 @@ class Mooveat_Address_Book_Admin
 
     public function two_screen_layout_columns($columns)
     {
-        $columns['post'] = 2;
+        $columns['post'] = 1;
         return $columns;
     }
 
     public function two_screen_layout_post()
     {
-        return 2;
+        return 1;
     }
 
 
@@ -248,14 +255,14 @@ class Mooveat_Address_Book_Admin
                         if ( $can_publish ) {
 
                             echo '<input name="original_publish" type="hidden" id="original_publish" value="Save Contact"/>';
-                            submit_button(sprintf(__('Save Contact %'), $item), 'primary button-large', 'publish', false, array('accesskey' => 'p'));
+                            submit_button(sprintf(__('Enregistrer le contact %'), $item), 'primary button-large', 'publish', false, array('accesskey' => 'p'));
 
                         }
                     } else {
                         echo '<input name="original_publish" type="hidden" id="original_publish"
                                value="Save Contact"/>
                         <input name="save" type="submit" class="button button-primary button-large" id="publish"
-                               accesskey="p" value="Save Contact"/>';
+                               accesskey="p" value="Enregistrer le contact"/>';
 
                     } //if
 

@@ -36,13 +36,23 @@ class Mooveat_Address_Book {
 
         $this->loader->add_action('admin_enqueue_scripts', $admin, 'admin_scripts');
         $this->loader->add_action( 'admin_init' , $admin, 'remove_columns_init', 20 );
-        //ajax call
+
+        // CSO by CPO AAJX
         $this->loader->add_action('wp_ajax_cso_category', $acf, 'secondary_by_principal_category');
         $this->loader->add_action('wp_ajax_nopriv_cso_category', $acf , 'secondary_by_principal_category');
+
+        // CTO by CSO AJAX
+        $this->loader->add_action('wp_ajax_cto_category', $acf, 'third_by_secondary_category');
+        $this->loader->add_action('wp_ajax_nopriv_cto_category', $acf , 'third_by_secondary_category');
+
+
         //save acf contact as post title - fire on new post
-        $this->loader->add_action( 'save_post_mv_address_book', $admin, 'mv_contact_name_as_post_title', 20, 3);
+//        $this->loader->add_action( 'save_post_mv_address_book', $admin, 'mv_contact_name_as_post_title', 20, 3);
+        $this->loader->add_action( 'save_post_mv_address_book', $acf, 'save_post_query_var', 30, 3);
         // save acf contact as post title on update post
-        $this->loader->add_action('acf/save_post', $acf, 'my_post_title_updater', 20, 2);
+        $this->loader->add_action('acf/save_post', $acf, 'my_post_title_updater', 20, 1);
+        $this->loader->add_action('acf/save_post', $acf, 'create_wpuser_from_contact', 20, 1);
+
 
     }
 

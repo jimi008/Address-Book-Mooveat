@@ -10,17 +10,34 @@ class Mooveat_Address_Book_ACF
         $this->version = $version;
 
         add_action('plugins_loaded', array( $this, 'acf_options_page') );
+
         add_filter( 'terms_clauses', array( $this, 'terms_clauses_multiple_parents'), 20, 3 );
+
         // Populate select field using filter
         add_filter('acf/load_field/name=categorie_principale_organisation', array( $this, 'acf_load_category_principal') );
+
         // Populate select field using filter
         add_filter('acf/load_field/name=categorie_secondaire_organisation', array( $this, 'acf_load_category_secondary') );
+
+
+        // Populate select field using filter
+        add_filter('acf/load_field/name=categorie_tertiaire_organisation', array( $this, 'acf_load_category_third') );
+
         // Populate select field using filter
         add_filter('acf/load_field/name=categories_produits', array( $this, 'acf_load_categories_produits') );
+
         // Populate select field u
         add_filter('acf/load_field/name=label', array( $this, 'acf_load_labels') );
 
         add_filter('ac/column/value', array( $this, 'ac_cpo_column_value'), 20, 3 );
+
+//        add_action( 'save_post', array( $this, 'save_post' ) );
+
+        add_action( 'admin_notices', array($this, 'admin_notice'), 20 );
+
+//        add_action('init', array($this, 'admin_only') );
+
+        add_action( 'delete_user', array($this, 'update_from_WP_USER'),20, 1 );
 
     }
 
@@ -48,7 +65,7 @@ class Mooveat_Address_Book_ACF
     public function terms_clauses_multiple_parents( $pieces, $taxonomies, $args )
     {
         // Bail if we are not currently handling our specified taxonomy
-        if (!in_array('categorie_producteur_point_vente', $taxonomies))
+        if (!in_array('nomenclature_beta', $taxonomies))
             return $pieces;
 
         // Check if our custom argument, 'wpse_parents' is set, if not, bail
@@ -89,8 +106,17 @@ class Mooveat_Address_Book_ACF
     public function my_post_title_updater($post_id)
     {
 
-        $my_post = array();
-        $my_post['ID'] = $post_id;
+        if ((wp_is_post_revision($post_id) || wp_is_post_autosave($post_id))) {
+            return;
+        }
+
+          $my_contact = array(
+            'ID' => $post_id,
+            'post_status' => 'publish',
+            'post_name' => $post_id,
+            'post_type' => 'mv_address_book'
+        );
+
 
         $contact_group = get_field('contact', $post_id);
 
@@ -98,13 +124,247 @@ class Mooveat_Address_Book_ACF
         $nom = $contact_group['nom'];
         $fullName = $firstName . ' ' . $nom;
 
+        $my_contact['post_title'] = $fullName;
+
         if (get_post_type() == 'mv_address_book') {
-            $my_post['post_title'] = $fullName;
+            // Update the post into the database
+
+            wp_insert_post($my_contact);
+
         }
 
-        // Update the post into the database
-        wp_update_post($my_post);
 
+    }
+
+    public function save_post_query_var( $post_id, $post, $update ) {
+        add_filter( 'redirect_post_location', array( $this, 'add_notice_query_var' ), 99 );
+
+    }
+
+    public function add_notice_query_var( $location ) {
+        remove_filter( 'redirect_post_location', array( $this, 'add_notice_query_var' ), 99 );
+        return add_query_arg( array( 'saved' => 'true' ), $location );
+    }
+
+
+
+
+
+    public function admin_notice() {
+
+        global $pagenow;
+
+
+        if ( $pagenow == 'user-edit.php' ) {
+
+            $user_id = isset ($_GET['user_id']) ? $_GET['user_id'] : '';
+            $is_linked_ID = get_user_meta($user_id, 'user_linked_to_contact', true);
+
+
+            if ($is_linked_ID) {
+                $contact_url = get_edit_post_link( $is_linked_ID );
+                $contact_name = get_the_title($is_linked_ID);
+
+                if ($contact_name){
+
+                    $class = 'notice notice-info is-dismissible';
+                    $message = sprintf(__('This user belongs to contact entry ', 'mv') . '<a href="%1$s">%2$s</a>', $contact_url, $contact_name);
+
+                    printf( '<div class="%1$s"><p>%2$s</p></div>', esc_attr( $class ), $message  );
+                }
+
+            }
+
+        }
+
+
+        if ( ! isset( $_GET['saved'] ) ) {
+            return;
+        }
+
+        if ( $this->is_empty_email() == true && $this->checked_wpuser() == true ){
+
+            $class = 'notice notice-error is-dismissible';
+            $message = __( 'Please input email address to create WP-USER', 'mv' );
+            printf( '<div class="%1$s"><p>%2$s</p></div>', esc_attr( $class ), esc_html( $message ) );
+        }
+
+
+        if( $this->is_email_duplicate() == true  && $this->checked_wpuser() == true && $this->is_empty_email() == false ){
+
+            $class = 'notice notice-error is-dismissible';
+            $message = __( 'Duplicate email found', 'mv' );
+            printf( '<div class="%1$s"><p>%2$s</p></div>', esc_attr( $class ), esc_html( $message ) );
+        }
+
+
+    }
+
+    public function is_empty_email() {
+        $email = get_post_meta( get_the_ID(), 'social_email', true );
+
+        if ( !($email) ) {
+            // email is empty
+            return true;
+        } else {
+            return false;
+        }
+
+    }
+
+    public function checked_wpuser() {
+        $wp_user_checked = get_post_meta( get_the_ID(), 'contact_wp_user', true );
+
+        if( !$wp_user_checked ){
+            //checkbox is not checked
+           return false;
+        } else {
+            return true;
+        }
+    }
+
+    public function is_email_duplicate() {
+        $email_exist = get_post_meta( get_the_ID(), 'duplicate_email_exist', true );
+
+        if ( ($email_exist == 1)  ){
+            //duplicate email found
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    function create_wpuser_from_contact($post_id) {
+
+        $email_key = 'duplicate_email_exist';
+        $email = get_post_meta( get_the_ID(), 'social_email', true );
+
+        delete_post_meta($post_id, $email_key);
+
+        if (!$email) {
+            return;
+        }
+
+        $contacts = get_posts(array(
+            'posts_per_page' => -1,
+            'post_type' => 'mv_address_book',
+            'exclude'   => $post_id,
+            'meta_key' => 'social_email',
+            'meta_value' => $email,
+        ));
+
+        $contact_url = get_edit_post_link( $post_id );
+        $contact_name = get_the_title($post_id);
+
+
+        if( !empty($contacts) ) {
+            // some contact found
+            add_post_meta($post_id, $email_key, 1, false);
+
+            // If this is a revision, don't send the email.
+            if ( wp_is_post_revision( $post_id ) )
+                return;
+
+            $subject = 'A contact has duplicate email';
+
+            $message = "L’email de cette personne est déjà présent dans la liste des utilisateurs wordpress\n\n";
+            $message .= '<a href="'. $contact_url . '">' . $contact_name . '</a>';
+
+            // Send email to admin.
+            if ($this->is_email_duplicate() == true  && $this->checked_wpuser() == true && $this->is_empty_email() == false){
+                wp_mail( 'jamil2004789@gmail.com', $subject, $message );
+            }
+
+
+
+        } else {
+
+            $existed_user_ID = email_exists($email);
+
+            // bail early if  wp-user checkbox is not checked
+            if ( $this->checked_wpuser() == false ) {
+                // delete user meta about link with contact entry
+                delete_user_meta( $existed_user_ID, 'user_linked_to_contact', $post_id);
+                return;
+            }
+
+            // bail early if email is empty
+            if ( $this->is_empty_email() == true ) {
+                return;
+            }
+
+            // bail early if duplicate  email found in another contact entry
+            if ( $this->is_email_duplicate() == true ){
+                return;
+            }
+
+
+
+                // check if existing user found and update its information
+                if ( $existed_user_ID ) {
+                    $arg = array(
+                        'ID' => $post_id,
+                        'post_author' => $existed_user_ID,
+                    );
+                    //link contact with WP-USER
+                    wp_update_post($arg);
+
+                    // update WP-USER from contact data
+
+                    $userdata = array(
+                        'ID'        => $existed_user_ID,
+                        'display_name' => $contact_name,
+                        'user_pass' => NULL  // When creating an user, `user_pass` is expected.
+                    );
+                    wp_update_user( $userdata );
+
+                    // add user meta about link with contact entry
+                    add_user_meta( $existed_user_ID, 'user_linked_to_contact', $post_id);
+
+                } else {
+
+                    // If not existing user found then create a new user
+                    $userdata = array(
+                        'user_login' => $email,
+                        'user_email' => $email,
+                        'display_name' => $contact_name,
+                        'user_pass' => NULL  // When creating an user, `user_pass` is expected.
+                    );
+
+                    $new_user_id = wp_insert_user($userdata);
+
+                    // add user meta about link with contact entry
+                    add_user_meta( $new_user_id, 'user_linked_to_contact', $post_id);
+
+                    if ( $new_user_id ) {
+                        $arg = array(
+                            'ID' => $post_id,
+                            'post_author' => $new_user_id,
+                        );
+                        wp_update_post($arg);
+                    }
+
+                }
+
+
+        }
+
+
+
+    }
+
+
+    public function update_from_WP_USER( $user_id ) {
+
+        $is_linked_ID = get_user_meta($user_id, 'user_linked_to_contact', true);
+
+        // check if its corresponding user
+        if ($is_linked_ID) {
+
+            // Un-check WP-USER in corresponding contact entry
+            update_post_meta($is_linked_ID, 'contact_wp_user', null);
+
+        }
     }
 
     public function acf_load_category_principal($field)
@@ -121,10 +381,10 @@ class Mooveat_Address_Book_ACF
          */
 
         $terms = get_terms(array(
-            'taxonomy' => 'categorie_producteur_point_vente',
+            'taxonomy' => 'nomenclature_beta',
             'orderby' => 'name',
             'order' => 'ASC',
-            'wpse_parents' => [750, 751],
+            'wpse_parents' => [766],
             'hide_empty' => false
 
         ));
@@ -133,8 +393,10 @@ class Mooveat_Address_Book_ACF
         // Populate
         $field['choices'][''] = 'Select Category';
 
-        foreach ($terms as $term) {
-            $field['choices'][$term->term_id] = $term->name;
+        if ($terms) {
+            foreach ($terms as $term) {
+                $field['choices'][$term->term_id] = $term->name;
+            }
         }
 
         // Return values
@@ -145,6 +407,16 @@ class Mooveat_Address_Book_ACF
     public function acf_load_category_secondary($field)
     {
 
+
+//        $cso_group = get_field('contact');
+//        $selected_cso = $cso_group['wp_user'];
+//
+//        var_dump($selected_cso);
+
+//        $key = get_post_meta( get_the_ID(), 'mvcpo_categorie_principale_organisation', true );
+//        $key = get_post_meta( get_the_ID(), 'contact_wp_user', true );
+//        var_dump($key);
+
         // Reset choices
         $field['choices'] = array();
 
@@ -152,12 +424,12 @@ class Mooveat_Address_Book_ACF
         $selected_cpo = $cpo_group['categorie_principale_organisation']['value'];
 
         // Populate
-        $field['choices'][''] = 'Select Category';
+//        $field['choices'][''] = 'Select Category';
 
         if ($selected_cpo) {
 
             $terms = get_terms(array(
-                'taxonomy' => 'categorie_producteur_point_vente',
+                'taxonomy' => 'nomenclature_beta',
                 'orderby' => 'name',
                 'order' => 'ASC',
                 'parent' => $selected_cpo,
@@ -165,8 +437,10 @@ class Mooveat_Address_Book_ACF
 
             ));
 
-            foreach ($terms as $term) {
-                $field['choices'][$term->name] = $term->name;
+            if ($terms) {
+                foreach ($terms as $term) {
+                    $field['choices'][$term->term_id] = $term->name;
+                }
             }
 
         }
@@ -177,11 +451,11 @@ class Mooveat_Address_Book_ACF
     }
 
 
-    // Returns category secondary organization by category principal organization
-    public function secondary_by_principal_category($selected_cpo)
+    // AJAX Returns category secondary organization by category principal organization
+    public function secondary_by_principal_category()
     {
 
-        // Verify nonce
+        // Verify nonce AJAX
         if (!isset($_POST['cpo_nonce']) || !wp_verify_nonce($_POST['cpo_nonce'], 'cpo_nonce'))
             die('Permission denied');
 
@@ -189,7 +463,7 @@ class Mooveat_Address_Book_ACF
         $selected_cpo = $_POST['selected_cpo'];
 
         $terms = get_terms(array(
-            'taxonomy' => 'categorie_producteur_point_vente',
+            'taxonomy' => 'nomenclature_beta',
             'orderby' => 'name',
             'order' => 'ASC',
             'parent' => $selected_cpo,
@@ -200,7 +474,7 @@ class Mooveat_Address_Book_ACF
         foreach ($terms as $term) {
 
             $new_cso[] = array(
-                $term->name => $term->name
+                $term->term_id => $term->name
             );
 
         }
@@ -212,8 +486,88 @@ class Mooveat_Address_Book_ACF
 
         } else {
 
-            $arr_data = array('No Response');
-            return wp_send_json($arr_data);
+            return wp_send_json(null);
+
+        }
+
+        die();
+    }
+
+    //load value on page load
+    public function acf_load_category_third($field)
+    {
+
+
+        // Reset choices
+        $field['choices'] = array();
+
+        $cso_group = get_field('cso_grp');
+        $selected_cso = $cso_group['categorie_secondaire_organisation']['value'];
+
+        // Populate
+//        $field['choices'][''] = 'Select Category';
+
+        if ($selected_cso) {
+
+            $terms = get_terms(array(
+                'taxonomy' => 'nomenclature_beta',
+                'orderby' => 'name',
+                'order' => 'ASC',
+                'parent' => $selected_cso,
+                'hide_empty' => false
+
+            ));
+
+            if ($terms) {
+                foreach ($terms as $term) {
+                    $field['choices'][$term->name] = $term->name;
+                }
+            }
+
+        }
+
+        // Return values
+        return $field;
+
+    }
+
+
+    // AJAX Returns category third organization by category secondary organization
+    public function third_by_secondary_category()
+    {
+
+        // Verify nonce AJAX
+        if (!isset($_POST['cpo_nonce']) || !wp_verify_nonce($_POST['cpo_nonce'], 'cpo_nonce'))
+            die('Permission denied');
+
+        // Get principal selected var
+        $selected_cso = $_POST['selected_cso'];
+
+        $terms = get_terms(array(
+            'taxonomy' => 'nomenclature_beta',
+            'orderby' => 'name',
+            'order' => 'ASC',
+            'parent' => $selected_cso,
+            'hide_empty' => false
+
+        ));
+
+        foreach ($terms as $term) {
+
+            $new_cto[] = array(
+                $term->name => $term->name
+            );
+
+        }
+
+        // Returns direct child terms as array if there is selected category principal organization
+        if ($selected_cso) {
+
+            return wp_send_json($new_cto);
+
+        } else {
+
+            return wp_send_json(null);
 
         }
 
@@ -300,7 +654,6 @@ class Mooveat_Address_Book_ACF
 
             if ( 'mvcpo_categorie_principale_organisation' == $meta_key ) {
 
-                // Use the color
                 if ($value != '&ndash;') {
 
                     $cpo_group = get_field_object('mvcpo');
@@ -311,6 +664,42 @@ class Mooveat_Address_Book_ACF
 
                 }
             }
+
+            if ( 'cso_grp_categorie_secondaire_organisation' == $meta_key ) {
+
+                if ($value != '&ndash;') {
+
+                    $cpo_group = get_field_object('cso_grp');
+                    $selected_cpo = $cpo_group['sub_fields'][0];
+                    $selected_cpo_label = $selected_cpo['choices'][ $value ];
+
+                    $value = $selected_cpo_label;
+
+                }
+            }
+
+
+//            if ( 'cto_grp_categorie_tertiaire_organisation' == $meta_key ) {
+//
+//                if ($value != '&ndash;') {
+//
+//                    $cpo_group = get_field_object('cto_grp');
+//                    $selected_cpo = $cpo_group['sub_fields'][0];
+//                    $selected_cpo_label = $selected_cpo['choices'][ $value ];
+//
+//                    $value = $selected_cpo_label;
+//
+//                }
+//            }
+
+
+//            if ( 'social_email' == $meta_key ) {
+//
+//                    echo ( 'jimi007' );
+//
+//
+//            }
+
         }
 
         return $value;

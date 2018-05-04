@@ -5,10 +5,11 @@ body .acf-field .acf-label {
   border-radius: 10px 10px 0 0; }
   body .acf-field .acf-label label {
     margin: 0;
-    padding: 15px 12px;
-    cursor: auto; }
+    padding: 10px 12px;
+    cursor: auto;
+    text-transform: uppercase; }
 
-body .acf-field .acf-input .acf-label label {
+body .acf-field .acf-input .acf-input .acf-label label {
   display: none; }
 
 body .acf-fields.-border {
@@ -59,3 +60,29 @@ body .mv-fonction {
     position: absolute;
     top: 50%;
     left: 50%; }
+
+body .acf-field-clone.col > .acf-label {
+  display: none; }
+
+body .acf-field-clone .acf-field-group {
+  background: #fff;
+  margin-bottom: 20px;
+  border-radius: 10px; }
+
+body .acf-field-clone .acf-fields.-border {
+  background: transparent; }
+
+body .acf-fields > .acf-field-clone {
+  clear: none; }
+
+.yoast-alert, .ac-button-edit {
+  display: none !important; }
+
+.select2-container {
+  margin: 0 2px 0 2px; }
+
+.tablenav.top #doaction, #doaction2, #post-query-submit {
+  margin: 0px 4px 0 4px; }
+
+.multi-select {
+  float: left; }

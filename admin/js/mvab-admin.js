@@ -1,17 +1,20 @@
 
 jQuery( document ).ready(function( $ ) {
 
-    $('.mv-contacts, .mv-social').wrapAll('<div class="col col-1"></div>');
-    $('.mv-logo, .mv-cpo-grp, .mv-cso-grp, .mv-typologie ').wrapAll('<div class="col col-2"></div>');
-    $('.mv-fonction, .mv-cp-grp, .mv-suivi_actions ').wrapAll('<div class="col col-3"></div>');
+    // $('.mv-contacts, .mv-social').wrapAll('<div class="col col-1"></div>');
+    // $('.mv-logo, .mv-cpo-grp, .mv-cso-grp, .mv-typologie ').wrapAll('<div class="col col-2"></div>');
+    // $('.mv-fonction, .mv-cp-grp, .mv-suivi_actions ').wrapAll('<div class="col col-3"></div>');
+
+
+
 
     var $followUpWrapper = $( ".mv-followup-wrap" );
     $followUpWrapper.dialog({
         autoOpen: false,
         draggable: false,
         modal: true,
-        width: '100%',
-        appendTo: '.col-3'
+        width: '85%',
+        appendTo: '#acf-group_5ad78f288b311 .inside.acf-fields'
     });
 
 
@@ -21,7 +24,7 @@ jQuery( document ).ready(function( $ ) {
         var $nom = $('.mv-nom input').val();
         var $firstName = $('.mv-firstname input').val();
         if (!$nom == "" && !$firstName == "") {
-            $('.mv-followup-wrap label').text('Contact: ' + $firstName + ' ' + $nom);
+            $('.mv-followup-wrap > .acf-label label').text('Contact: ' + $firstName + ' ' + $nom);
         }
 
     });
@@ -51,12 +54,9 @@ jQuery(document).ready(function($) {
         '</div>');
 
     // Add default 'Select one'
-    $( '.mv-cpo select option[value=0]' ).attr({ selected: 'selected', disabled: 'disabled'});
+    // $( '.mv-cpo select option[value=0]' ).attr({ selected: 'selected', disabled: 'disabled'});
 
-    /**
-     * Get country option on select menu change
-     *
-     */
+
     $( '.mv-cpo select' ).change(function () {
 
         var selected_cpo = ''; // Selected value
@@ -69,7 +69,7 @@ jQuery(document).ready(function($) {
         });
 
         //disable select default
-        $( '.mv-cso select' ).attr( 'disabled', 'disabled' );
+        // $( '.mv-cso select' ).attr( 'disabled', 'disabled' );
 
         // If default is not selected get categories
         if( selected_category != 'Select Category' ) {
@@ -87,12 +87,20 @@ jQuery(document).ready(function($) {
                 data: data,
                 type: 'POST',
                 success: function (data) {
+
+                    console.log(data);
+
                     if (data) {
 
+                        if(data ==  null) {
+                            $('.mv-cso select').html($('<option></option>').val('').html('No Category').attr({
+                                selected: 'selected'
+                            }));
+                        }
+
                         // Disable 'Select Area' field until principal category is selected
-                        $('.mv-cso select').html($('<option></option>').val('0').html('Select Category').attr({
-                            selected: 'selected',
-                            disabled: 'disabled'
+                        $('.mv-cso select').html($('<option></option>').val('').html('Select Category').attr({
+                            selected: 'selected'
                         }));
 
                         // Add secondary organizations to select field options
@@ -107,6 +115,10 @@ jQuery(document).ready(function($) {
 
                         // Enable 'Select Area' field
                         $('.mv-cso select').removeAttr('disabled');
+                    } else {
+                        $('.mv-cso select').html($('<option></option>').val('').html('No Category').attr({
+                            selected: 'selected'
+                        }));
                     }
                 },
                 complete: function (xhr) {
@@ -115,20 +127,124 @@ jQuery(document).ready(function($) {
             });
         }
     });
+
+
+
+    // CTO AJAX
+
+    // Add default 'Select one'
+    // $( '.mv-cso select option[value=0]' ).attr({ selected: 'selected', disabled: 'disabled'});
+
+    $( '.mv-cso select' ).change(function () {
+
+        var selected_cso = ''; // Selected value
+        var selected_category = ''; //Selected option title
+
+        // Get selected value
+        $( '.mv-cso select option:selected' ).each(function() {
+            selected_cso += $( this ).val();
+            selected_category += $( this ).text();
+        });
+
+        //disable select default
+        // $( '.mv-cto select' ).attr( 'disabled', 'disabled' );
+
+        // If default is not selected get categories
+        if( selected_category != 'Select Category' ) {
+
+            // Send AJAX request
+            data = {
+                action: 'cto_category',
+                cpo_nonce: cpo_vars.cpo_nonce,
+                selected_cso: selected_cso
+            };
+
+            // Get response and populate select field
+            $.ajax({
+                url: ajaxurl,
+                data: data,
+                type: 'POST',
+                error: function(data){
+
+                        console.log('Error encountered');
+
+                },
+                success: function (data) {
+                    console.log(data);
+                    if (data) {
+
+                        if(data ==  null) {
+                            $('.mv-cto select').html($('<option></option>').val('').html('No Category').attr({
+                                selected: 'selected'
+                            }));
+                        }
+
+                        // Disable 'Select Area' field until principal category is selected
+                        $('.mv-cto select').html($('<option></option>').val('').html('Select Category').attr({
+                            selected: 'selected'
+                        }));
+
+                        // Add secondary organizations to select field options
+                        $.each(data, function (val, text) {
+
+                            $.each(this, function (v, t) {
+                                /// do stuff
+                                $('.mv-cto select').append($('<option></option>').val(v).html(t));
+                            });
+
+                        });
+
+                        // Enable 'Select Area' field
+                        $('.mv-cto select').removeAttr('disabled');
+                    } else {
+                        $('.mv-cto select').html($('<option></option>').val('').html('No Category').attr({
+                            selected: 'selected'
+                        }));
+                    }
+                },
+                complete: function (xhr) {
+                    $(".post-loader").css("display", "none");
+                }
+            });
+        }
+    })
+
+
 });
 
 
 
 jQuery(document).ready(function($) {
 
-    $(".mv-cso select").each(function () {
-        this.disabled = $('option', this).length < 2;
-    });
+    // disable CSO field if no options
+    // $(".mv-cso select").each(function () {
+    //     this.disabled = $('option', this).length < 2;
+    // });
+
+    // disable CTO field if no options
+    // $(".mv-cto select").each(function () {
+    //     this.disabled = $('option', this).length < 2;
+    //
+    // });
+
+});
+
+// Select 2
+jQuery(document).ready(function ($) {
+    if( $( '.multi-select' ).length > 0 ) {
+
+        $( '.multi-select' ).select2({
+            placeholder: 'Select'
+        });
+
+        // $( document.body ).on( "click", function() {
+        //     $( '.multi-select' ).select2({
+        //         placeholder: 'Select'
+        //     });
+        // });
+
+    }
 });
 
 
 
-jQuery(document).ready(function($) {
-
-
-});
