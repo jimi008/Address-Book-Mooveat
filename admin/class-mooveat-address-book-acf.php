@@ -37,7 +37,7 @@ class Mooveat_Address_Book_ACF
 
 //        add_action('init', array($this, 'admin_only') );
 
-        add_action( 'delete_user', array($this, 'update_from_WP_USER'),20, 1 );
+        add_action( 'delete_user', array($this, 'update_contact_from_WP_USER'),20, 1 );
 
     }
 
@@ -136,7 +136,7 @@ class Mooveat_Address_Book_ACF
 
     }
 
-    public function save_post_query_var( $post_id, $post, $update ) {
+    public function save_post_query_var( ) {
         add_filter( 'redirect_post_location', array( $this, 'add_notice_query_var' ), 99 );
 
     }
@@ -153,7 +153,6 @@ class Mooveat_Address_Book_ACF
     public function admin_notice() {
 
         global $pagenow;
-
 
         if ( $pagenow == 'user-edit.php' ) {
 
@@ -272,7 +271,9 @@ class Mooveat_Address_Book_ACF
 
             // Send email to admin.
             if ($this->is_email_duplicate() == true  && $this->checked_wpuser() == true && $this->is_empty_email() == false){
-                wp_mail( 'jamil2004789@gmail.com', $subject, $message );
+
+                $admin_email = get_option( 'admin_email' );
+                wp_mail( $admin_email, $subject, $message );
             }
 
 
@@ -354,7 +355,7 @@ class Mooveat_Address_Book_ACF
     }
 
 
-    public function update_from_WP_USER( $user_id ) {
+    public function update_contact_from_WP_USER( $user_id ) {
 
         $is_linked_ID = get_user_meta($user_id, 'user_linked_to_contact', true);
 
@@ -384,7 +385,7 @@ class Mooveat_Address_Book_ACF
             'taxonomy' => 'nomenclature_beta',
             'orderby' => 'name',
             'order' => 'ASC',
-            'wpse_parents' => [766],
+            'wpse_parents' => [772, 766],
             'hide_empty' => false
 
         ));
@@ -421,12 +422,16 @@ class Mooveat_Address_Book_ACF
         $field['choices'] = array();
 
         $cpo_group = get_field('mvcpo');
-        $selected_cpo = $cpo_group['categorie_principale_organisation']['value'];
+        $selected_cpo = "";
+        if ( isset( $cpo_group['categorie_principale_organisation']['value'] ) ) {
+            $selected_cpo = $cpo_group['categorie_principale_organisation']['value'];
+        }
+
 
         // Populate
 //        $field['choices'][''] = 'Select Category';
 
-        if ($selected_cpo) {
+        if ( !empty( $selected_cpo ) ) {
 
             $terms = get_terms(array(
                 'taxonomy' => 'nomenclature_beta',
@@ -502,12 +507,15 @@ class Mooveat_Address_Book_ACF
         $field['choices'] = array();
 
         $cso_group = get_field('cso_grp');
-        $selected_cso = $cso_group['categorie_secondaire_organisation']['value'];
+        $selected_cso = "";
+        if ( isset( $cso_group['categorie_secondaire_organisation']['value'] ) ) {
+            $selected_cso = $cso_group['categorie_secondaire_organisation']['value'];
+        }
 
         // Populate
 //        $field['choices'][''] = 'Select Category';
 
-        if ($selected_cso) {
+        if ( !empty( $selected_cso ) ) {
 
             $terms = get_terms(array(
                 'taxonomy' => 'nomenclature_beta',

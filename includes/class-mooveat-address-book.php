@@ -48,7 +48,7 @@ class Mooveat_Address_Book {
 
         //save acf contact as post title - fire on new post
 //        $this->loader->add_action( 'save_post_mv_address_book', $admin, 'mv_contact_name_as_post_title', 20, 3);
-        $this->loader->add_action( 'save_post_mv_address_book', $acf, 'save_post_query_var', 30, 3);
+        $this->loader->add_action( 'save_post_mv_address_book', $acf, 'save_post_query_var', 30 );
         // save acf contact as post title on update post
         $this->loader->add_action('acf/save_post', $acf, 'my_post_title_updater', 20, 1);
         $this->loader->add_action('acf/save_post', $acf, 'create_wpuser_from_contact', 20, 1);

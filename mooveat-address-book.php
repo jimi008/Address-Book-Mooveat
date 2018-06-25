@@ -118,10 +118,24 @@ function my_restrict_manage_posts($post_type) {
             <?php
 
             $current_s = isset($_GET['mv_cpo'])? $_GET['mv_cpo']:'';
+            if ($current_s) {
+                foreach ( $current_s as $key => $value ){
+                    $current_s[] = $value;
+                }
+            }
+
+
 
             foreach ($allcpo as $label => $value) {
+
+                if ( is_array($current_s) ) {
+                    if ( in_array($value, $current_s) ){
+                        $current_s = true;
+                    }
+                }
+
                 ?>
-                <option value="<?php echo $value; ?>" <?php echo in_array($value, $current_s) ? 'selected="selected"' : ""; ?> >
+                <option value="<?php echo $value; ?>" <?php echo ($current_s) ? 'selected="selected"' : ""; ?> >
                     <?php echo $label ?>
                 </option>
 
@@ -135,12 +149,25 @@ function my_restrict_manage_posts($post_type) {
     <select name="mv_cso[]" id="mv_cso" class="multi-select" style="width:180px;" multiple placeholder="Catégorie secondaire">
 <!--        <option value="">--><?php //_e('Catégorie secondaire', 'mv'); ?><!--</option>-->
         <?php
-
+//        $current_s = array();
         $current_s = isset($_GET['mv_cso'])? $_GET['mv_cso']:'';
+        if ($current_s) {
+            foreach ( $current_s as $key => $value ){
+                $current_s[] = $value;
+            }
+        }
+
 
         foreach ($allcso as $label => $value) {
+
+            if ( is_array($current_s) ) {
+                if ( in_array($value, $current_s) ){
+                    $current_s = true;
+                }
+            }
+
             ?>
-            <option value="<?php echo $value; ?>" <?php echo in_array($value, $current_s) ? 'selected="selected"' : ""; ?> >
+            <option value="<?php echo $value; ?>" <?php echo ($current_s) ? 'selected="selected"' : ""; ?> >
                 <?php echo $label ?>
             </option>
 
@@ -157,10 +184,22 @@ function my_restrict_manage_posts($post_type) {
         <?php
 
         $current_s = isset($_GET['mv_cto'])? $_GET['mv_cto']:'';
+        if ($current_s) {
+            foreach ( $current_s as $key => $value ){
+                $current_s[] = $value;
+            }
+        }
 
         foreach ($allcto as $label => $value) {
+
+            if ( is_array($current_s) ) {
+                if ( in_array($value, $current_s) ){
+                    $current_s = true;
+                }
+            }
+
             ?>
-            <option value="<?php echo $value; ?>" <?php echo in_array($value, $current_s) ? 'selected="selected"' : ""; ?> >
+            <option value="<?php echo $value; ?>" <?php echo ($current_s) ? 'selected="selected"' : ""; ?> >
                 <?php echo $label ?>
             </option>
 
@@ -177,10 +216,22 @@ function my_restrict_manage_posts($post_type) {
         <?php
 
         $current_s = isset($_GET['mv_cpg'])? $_GET['mv_cpg']:'';
+        if ($current_s) {
+            foreach ( $current_s as $key => $value ){
+                $current_s[] = $value;
+            }
+        }
 
         foreach ($allcsg as $label => $value) {
+
+            if ( is_array($current_s) ) {
+                if ( in_array($value, $current_s) ){
+                    $current_s = true;
+                }
+            }
+
             ?>
-            <option value="<?php echo $value; ?>" <?php echo in_array($value, $current_s) ? 'selected="selected"' : ""; ?> >
+            <option value="<?php echo $value; ?>" <?php echo ($current_s) ? 'selected="selected"' : ""; ?> >
                 <?php echo $label ?>
             </option>
 
@@ -197,11 +248,16 @@ function my_restrict_manage_posts($post_type) {
         <?php
 
         $current_s = isset($_GET['mv_label'])? $_GET['mv_label']:'';
+        if ($current_s) {
+            foreach ( $current_s as $key => $value ){
+                $current_s[] = $value;
+            }
+        }
 
         foreach ($labels as $label => $value) {
 
             ?>
-            <option value="<?php echo $value; ?>" <?php echo in_array($value, $current_s) ? 'selected="selected"' : ""; ?> >
+            <option value="<?php echo $value; ?>" <?php echo ($current_s) ? 'selected="selected"' : ""; ?> >
                 <?php echo $label ?>
             </option>
 
@@ -229,7 +285,7 @@ function my_restrict_manage_posts($post_type) {
             $qv = &$query->query_vars;
             $qv['meta_query'] = array();
 
-            $mv_cpo = $_GET['mv_cpo'];
+            $mv_cpo = isset( $_GET['mv_cpo'] ) ? $_GET['mv_cpo'] : '';
             if( !empty( $mv_cpo ) && isset($mv_cpo) ) {
                 $qv['meta_query'][] = array(
                     'key' => 'mvcpo_categorie_principale_organisation',
@@ -238,7 +294,7 @@ function my_restrict_manage_posts($post_type) {
                 );
             }
 
-            $mv_cso = $_GET['mv_cso'];
+            $mv_cso = isset( $_GET['mv_cso'] ) ? $_GET['mv_cso'] : '';
             if( !empty( $mv_cso ) && isset($mv_cso) ) {
                 $qv['meta_query'][] = array(
                     'key' => 'cso_grp_categorie_secondaire_organisation',
@@ -247,7 +303,7 @@ function my_restrict_manage_posts($post_type) {
                 );
             }
 
-            $mv_cto = $_GET['mv_cto'];
+            $mv_cto = isset( $_GET['mv_cto'] ) ? $_GET['mv_cto'] : '';
             if( !empty( $mv_cto ) && isset($mv_cto) ) {
                 $qv['meta_query'][] = array(
                     'key' => 'cto_grp_categorie_tertiaire_organisation',
@@ -257,7 +313,7 @@ function my_restrict_manage_posts($post_type) {
             }
 
 
-            $mv_cpg = $_GET['mv_cpg'];
+            $mv_cpg = isset( $_GET['mv_cpg'] ) ? $_GET['mv_cpg'] : '';
             if( !empty( $mv_cpg ) && isset($mv_cpg) ) {
                 $qv['meta_query'][] = array(
                     'key'		=> 'cp_values',
@@ -269,7 +325,7 @@ function my_restrict_manage_posts($post_type) {
 
 
 
-            $mv_label = $_GET['mv_label'];
+            $mv_label = isset( $_GET['mv_label'] ) ? $_GET['mv_label'] : '';
 
             if( !empty( $mv_label ) && isset($mv_label) ) {
                 $qv['meta_query'][] = array(

@@ -164,10 +164,8 @@ jQuery(document).ready(function($) {
                 url: ajaxurl,
                 data: data,
                 type: 'POST',
-                error: function(data){
-
+                error: function( data ){
                         console.log('Error encountered');
-
                 },
                 success: function (data) {
                     console.log(data);
@@ -214,20 +212,21 @@ jQuery(document).ready(function($) {
 
 
 
-jQuery(document).ready(function($) {
+// jQuery(document).ready(function($) {
+//
+//     // disable CSO field if no options
+//     // $(".mv-cso select").each(function () {
+//     //     this.disabled = $('option', this).length < 2;
+//     // });
+//
+//     // disable CTO field if no options
+//     // $(".mv-cto select").each(function () {
+//     //     this.disabled = $('option', this).length < 2;
+//     //
+//     // });
+//
+// });
 
-    // disable CSO field if no options
-    // $(".mv-cso select").each(function () {
-    //     this.disabled = $('option', this).length < 2;
-    // });
-
-    // disable CTO field if no options
-    // $(".mv-cto select").each(function () {
-    //     this.disabled = $('option', this).length < 2;
-    //
-    // });
-
-});
 
 // Select 2
 jQuery(document).ready(function ($) {
