@@ -1,0 +1,84 @@
+/* CSS for Mooveat Address Book Admin */
+body .acf-field .acf-label {
+  margin: 0;
+  background: #fff;
+  border-radius: 10px 10px 0 0; }
+  body .acf-field .acf-label label {
+    margin: 0;
+    padding: 5px 12px;
+    cursor: auto;
+    text-transform: uppercase; }
+body .acf-field .acf-input .acf-input .acf-label label {
+  display: none; }
+body .acf-fields.-border {
+  border: none;
+  border-radius: 0 0 10px 10px; }
+body .acf-fields > .acf-field {
+  border: none;
+  padding: 7px 12px; }
+body .mv-followup-wrap {
+  display: none; }
+body #acf_after_title-sortables .acf-postbox {
+  margin: 0; }
+body .mv-contacts,
+body .mv-logo,
+body .mv-fonction {
+  margin-top: 0; }
+
+.col {
+  width: 33.33333%;
+  float: left;
+  padding: 0 10px;
+  box-sizing: border-box; }
+  @media (max-width: 979px) {
+    .col {
+      width: 100%; } }
+
+@media (max-width: 979px) {
+  .col-2 {
+    width: 100% !important; } }
+
+.post-loader {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  right: 0;
+  bottom: 0;
+  background: #000;
+  opacity: .7;
+  z-index: 9999; }
+  .post-loader svg {
+    position: absolute;
+    top: 50%;
+    left: 50%; }
+
+body .acf-field-clone.col > .acf-label {
+  display: none; }
+
+body .acf-field-clone .acf-field-group {
+  background: #fff;
+  margin-bottom: 20px;
+  border-radius: 10px; }
+
+body .acf-field-clone .acf-fields.-border {
+  background: transparent; }
+
+body .acf-fields > .acf-field-clone {
+  clear: none; }
+
+.yoast-alert, .ac-button-edit {
+  display: none !important; }
+
+.select2-container {
+  margin: 0 2px 0 2px; }
+
+.tablenav.top #doaction, #doaction2, #post-query-submit {
+  margin: 0px 4px 0 4px; }
+
+.multi-select {
+  float: left; }
+
+/*# sourceMappingURL=mvab-admin.css.map */

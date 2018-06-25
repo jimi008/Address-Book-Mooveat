@@ -1,0 +1,124 @@
+/* CSS for Mooveat Address Book Admin */
+
+@mixin tablet {
+  @media (max-width: #{979px}) {
+    @content;
+  }
+
+}
+
+body {
+
+  .acf-field {
+    .acf-label {
+      margin: 0;
+      background: #fff;
+      border-radius: 10px 10px 0 0;
+
+      label {
+        margin: 0;
+        padding: 5px 12px;
+        cursor: auto;
+        text-transform: uppercase;
+      }
+    }
+    .acf-input .acf-input .acf-label label {
+      display: none;
+    }
+  }
+
+  .acf-fields.-border {
+    border: none;
+    border-radius: 0 0 10px 10px;
+
+  }
+  .acf-fields > .acf-field {
+    border: none;
+    padding: 7px 12px;
+  }
+
+
+  .mv-followup-wrap {
+  display: none;
+  }
+
+  #acf_after_title-sortables .acf-postbox {
+    margin: 0;
+  }
+
+  .mv-contacts,
+  .mv-logo,
+  .mv-fonction {
+    margin-top: 0;
+  }
+
+
+}
+
+.col {
+  width: (100%/3);
+  float: left;
+  padding: 0 10px;
+  box-sizing: border-box;
+
+
+  @include tablet {
+    width: 100%;
+  }
+}
+
+.col-2 {
+@include tablet {
+  width: 100% !important;
+}
+}
+
+
+.post-loader {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  right: 0;
+  bottom: 0;
+  background: #000;
+  opacity: .7;
+  z-index: 9999;
+  svg {
+    position:absolute;
+    top:50%;
+    left:50%;
+  }
+}
+
+
+
+
+body .acf-field-clone.col > .acf-label {
+  display: none;
+}
+
+body .acf-field-clone .acf-field-group {
+  background: #fff;
+  margin-bottom: 20px;
+  border-radius: 10px;
+}
+body .acf-field-clone .acf-fields.-border {
+  background: transparent;
+}
+body .acf-fields > .acf-field-clone {
+  clear: none;
+}
+
+.yoast-alert, .ac-button-edit {
+  display: none !important;
+}
+
+// select 2
+.select2-container {margin: 0 2px 0 2px;}
+.tablenav.top #doaction, #doaction2, #post-query-submit {margin: 0px 4px 0 4px;}
+.multi-select {
+  float: left;
+}
